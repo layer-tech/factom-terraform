@@ -37,7 +37,7 @@ inevitable that you will need to update packages on your servers. This approach
 makes it safe to apply changes and recover if something were to fail.
 
 One great business risk to administering servers with SSH only is the creeping
-problem of a (SnowflakeServer)[https://martinfowler.com/bliki/SnowflakeServer.html].
+problem of a [SnowflakeServer](https://martinfowler.com/bliki/SnowflakeServer.html).
 
 Terraform and Ansible ensure that no hidden dependencies become critical to
 your uptime.
