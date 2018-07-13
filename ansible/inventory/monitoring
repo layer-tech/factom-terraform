@@ -1,0 +1,2 @@
+[monitoring]
+<INSERT IP ADDRESS> ansible_connection=ssh ansible_ssh_private_key_file=~/.ssh/id_rsa

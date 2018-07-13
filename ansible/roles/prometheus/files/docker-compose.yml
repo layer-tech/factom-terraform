@@ -1,0 +1,27 @@
+version: '3.3'
+
+services:
+  prometheus:
+    image: quay.io/prometheus/prometheus:v2.2.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - prom:/prometheus
+      - prom_config:/etc/prometheus
+  alertmanager:
+    image: quay.io/prometheus/alertmanager:v0.14.0
+    ports:
+      - "9093:9093"
+    volumes:
+      - alertmanagerconfig:/etc/alertmanager
+  grafana:
+    image: grafana/grafana:5.1.3
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana:/var/lib/grafana
+volumes:
+  prom:
+  prom_config:
+  alertmanagerconfig:
+  grafana:

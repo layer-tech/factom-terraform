@@ -1,0 +1,34 @@
+---
+- name: make directory present
+  file:
+    path: /var/monitoring-service
+    state: directory
+    owner: root
+    group: root
+    mode: 0744
+
+- name: copy the docker-compose file for monitoring
+  copy:
+    src: docker-compose.yml
+    dest: /var/monitoring-service/docker-compose.yml
+    owner: root
+    mode: 0644
+
+- name: copy over prom config
+  copy:
+    src: prometheus.yml
+    dest: /var/lib/docker/volumes/monitoringservice_prom_config/_data/prometheus.yml
+    owner: root
+    group: root
+    mode: 0644
+
+- name: stop services
+  command: docker-compose down
+  args:
+    chdir: /var/monitoring-service
+  ignore_errors: true
+
+- name: start services
+  command: docker-compose up -d
+  args:
+    chdir: /var/monitoring-service

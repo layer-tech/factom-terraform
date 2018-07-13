@@ -1,0 +1,48 @@
+---
+- name: Make docker io present
+  apt:
+    name: docker.io
+    update_cache: true
+
+- name: Add user to docker group
+  user:
+    append: yes
+    name: ubuntu
+    groups: docker
+
+- name: Add docker compose if needed
+  apt:
+    name: docker-compose
+  when: docker_compose
+
+- name: Make docker TLS dir
+  file:
+    path: /etc/ssl/docker
+    state: directory
+    owner: root
+    group: root
+    mode: 0744
+
+- name: Add tls cert
+  copy:
+    src: cert.pem
+    dest: /etc/ssl/docker/cert.pem
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Add tls key
+  copy:
+    src: key.pem
+    dest: /etc/ssl/docker/key.pem
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Add docker daemon.json
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    mode: 0644
+  notify: restart docker

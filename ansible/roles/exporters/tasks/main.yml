@@ -1,0 +1,61 @@
+---
+- name: ensure wget is available
+  apt:
+    name: wget
+    state: present
+    update_cache: true
+
+- name: ensure gtar is available
+  apt:
+    name: tar
+    state: present
+
+- name: check if node exporter already exists
+  stat:
+    path: /var/node_exporter/node_exporter/node_exporter
+  register: node_e
+
+- name: create node exporter dir
+  file:
+    path: /var/node_exporter
+    state: directory
+    owner: root
+    group: root
+    mode: 0744
+  when: not node_e.stat.exists
+
+- name: download node exporter
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v0.16.0/node_exporter-0.16.0.linux-amd64.tar.gz
+    dest: /var/node_exporter
+  when: not node_e.stat.exists
+
+- name: extract node exporter
+  unarchive:
+    remote_src: yes
+    src: /var/node_exporter/node_exporter-0.16.0.linux-amd64.tar.gz
+    dest: /var/node_exporter
+  when: not node_e.stat.exists
+
+- name: check if node exporter is running
+  wait_for:
+    port: 9100
+    timeout: 2
+    delay: no
+  register: node_c
+  ignore_errors: true
+
+- name: if port is not in use then start node exporter
+  shell: cd /var/node_exporter/node_exporter-0.16.0.linux-amd64; nohup ./node_exporter >/dev/null 2>&1 &
+  when: node_c.failed
+
+- name: check if node exporter is running
+  wait_for:
+    port: 9100
+    timeout: 2
+    delay: no
+  register: node_d
+  ignore_errors: true
+
+- name: debug node_d
+  debug: var=node_d

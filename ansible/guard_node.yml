@@ -1,0 +1,18 @@
+---
+- name: factom guard node configuration
+  hosts: all
+  become: yes
+
+  gather_facts: false
+
+  pre_tasks:
+    - name: Install python for Ansible
+      become: true
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: false
+    - setup:
+
+  roles:
+    - { role: docker, tags: [ docker ] }
+    - { role: factomd, tags: [ factomd ] }
+    - { role: exporters, tags: [exporters] }

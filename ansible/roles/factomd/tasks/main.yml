@@ -1,0 +1,17 @@
+---
+- name: create factom_database volume
+  command: docker volume create factomd_database
+
+- name: create factom_keys volume
+  command: docker volume create factomd_keys
+
+- name: move container name otherwise ignore
+  command: docker rename factomd factomd-old
+  ignore_errors: true
+
+- name: stop factomd-old otherwise ignore
+  command: docker stop factomd-old
+  ignore_errors: true
+
+- name: Start factomd
+  command: docker run -d --name factomd -p "8088:8088" -p "8090:8090" -p "8108:8108" -v "factom_keys:/root/.factom/private" -v "factom_database:/root/.factom/m2" factominc/factomd:v5.1.0-alpine -startdelay=600 -faulttimeout=120 -config=/root/.factom/private/factomd.conf

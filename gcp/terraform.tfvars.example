@@ -1,0 +1,4 @@
+# Copy this file to common.tfvars
+# Then, enter in your own information
+gce_ssh_user = "john"
+gce_ssh_pub_key_file = "/home/john/.ssh/id_rsa.pub"
