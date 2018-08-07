@@ -10,6 +10,12 @@
     name: tar
     state: present
 
+
+- name: ensure jq is available
+  apt:
+    name: jq
+    state: present
+
 - name: check if node exporter already exists
   stat:
     path: /var/node_exporter/node_exporter/node_exporter
@@ -45,8 +51,25 @@
   register: node_c
   ignore_errors: true
 
+- name: create node_exporter/data directory
+  command: mkdir -p /var/prom_exports/data
+
+- name: copy over block height check
+  copy:
+    src: block_height.sh
+    dest: /var/prom_exports/block_height.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: cron for exporter
+  cron:
+    name: "check block height"
+    minute: "*/10"
+    job: "/var/prom_exports/block_height.sh"
+
 - name: if port is not in use then start node exporter
-  shell: cd /var/node_exporter/node_exporter-0.16.0.linux-amd64; nohup ./node_exporter >/dev/null 2>&1 &
+  shell: cd /var/node_exporter/node_exporter-0.16.0.linux-amd64; nohup ./node_exporter --collector.textfile.directory=/var/prom_exports/data >/dev/null 2>&1 &
   when: node_c.failed
 
 - name: check if node exporter is running

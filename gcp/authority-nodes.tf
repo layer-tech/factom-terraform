@@ -18,6 +18,14 @@ resource "google_compute_disk" "factom-main-node-disk-b" {
   size = "200"
 }
 
+# Disk for backup node
+resource "google_compute_disk" "factom-main-node-disk-backup" {
+  name = "factom-main-node-disk-backup"
+  type = "pd-ssd"
+  zone = "${var.zone_b}"
+  size = "200"
+}
+
 # Instance for node A
 resource "google_compute_instance" "factom-auth-node-a" {
   name = "factom-auth-node-a"
@@ -26,7 +34,7 @@ resource "google_compute_instance" "factom-auth-node-a" {
 
   description = "Main Factom network authority node A"
 
-  tags = ["factom-auth-ingress", "factom-auth-egress", "factom-main-ssh", "factom-firewall-monitoring-export-egress", "factom-internal-monitoring-export-ingress"]
+  tags = ["docker-engine", "factom-internal-swarm-egress", "factom-internal-swarm-ingress", "factom-auth-ingress", "factom-auth-egress", "factom-main-ssh", "factom-firewall-monitoring-export-egress", "factom-internal-monitoring-export-ingress"]
 
   boot_disk {
      initialize_params {
@@ -59,7 +67,7 @@ resource "google_compute_instance" "factom-auth-node-b" {
 
   description = "Main Factom network authority node B"
 
-  tags = ["factom-auth-ingress", "factom-auth-egress", "factom-main-ssh", "factom-firewall-monitoring-export-egress", "factom-internal-monitoring-export-ingress"]
+  tags = ["docker-engine", "factom-internal-swarm-egress", "factom-internal-swarm-ingress", "factom-auth-ingress", "factom-auth-egress", "factom-main-ssh", "factom-firewall-monitoring-export-egress", "factom-internal-monitoring-export-ingress"]
 
   boot_disk {
      initialize_params {
@@ -77,6 +85,39 @@ resource "google_compute_instance" "factom-auth-node-b" {
 
   attached_disk {
     source = "factom-main-node-disk-b"
+  }
+
+  metadata {
+    sshKeys = "${var.gce_ssh_user}:${file(var.gce_ssh_pub_key_file)}"
+  }
+}
+
+# A Swarm-connected backup node
+resource "google_compute_instance" "factom-auth-node-carolina-backup" {
+  name = "factom-auth-node-backup"
+  machine_type = "${var.auth_node_machine_type}"
+  zone = "${var.zone_b}"
+
+  description = "Main Factom network authority node backup"
+
+  tags = ["docker-engine", "factom-internal-swarm-egress", "factom-internal-swarm-ingress", "factom-auth-ingress", "factom-auth-egress", "factom-main-ssh", "factom-firewall-monitoring-export-egress", "factom-internal-monitoring-export-ingress"]
+
+  boot_disk {
+     initialize_params {
+       image = "ubuntu-1804-lts"
+       type = "pd-ssd"
+     }
+  }
+
+  network_interface {
+    network = "mainnet"
+    access_config {
+      // Ephemeral IP
+    }
+  }
+
+  attached_disk {
+    source = "factom-main-node-disk-backup"
   }
 
   metadata {

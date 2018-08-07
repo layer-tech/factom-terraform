@@ -6,7 +6,7 @@ resource "google_compute_instance" "factom-internal-monitoring" {
   machine_type = "n1-standard-1"
   zone = "${zone_a}"
 
-  description = "Main Factom network guard node Iowa A"
+  description = "Main Factom network monitoring"
 
   tags = ["factom-internal-monitoring-ingress", "factom-internal-monitoring-egress", "factom-main-ssh"]
 
@@ -14,7 +14,7 @@ resource "google_compute_instance" "factom-internal-monitoring" {
      initialize_params {
        image = "ubuntu-1804-lts"
        type = "pd-ssd"
-       size = "30"
+       size = "80"
      }
   }
 

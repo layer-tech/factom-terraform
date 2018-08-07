@@ -2,8 +2,8 @@
 
 This project contains Terraform projects with Ansible.
 
-**As of July 9th: This project is in alpha stage. It is derived, and not cloned, from
-code developed by LayerTech. Attempting to use this project is risky at this time.**
+**As of August 6th: This project is in alpha stage. It is derived, and not cloned, from
+code developed by LayerTech. Until a full release is available, use at your own risk.**
 
 **If you find any security concerns, do not open an Issue or PR. Please email
 tech@layertech.io or use discord to contact Xavierwjc#3480 or tomjm#6844**
@@ -36,7 +36,7 @@ to build a perfect copy on fresh servers in minutes. Changes are low risk; it is
 inevitable that you will need to update packages on your servers. This approach
 makes it safe to apply changes and recover if something were to fail.
 
-One great business risk to administering servers with SSH only is the creeping
+One risk to administering servers with SSH only is the creeping
 problem of a [SnowflakeServer](https://martinfowler.com/bliki/SnowflakeServer.html).
 
 Terraform and Ansible ensure that no hidden dependencies become critical to

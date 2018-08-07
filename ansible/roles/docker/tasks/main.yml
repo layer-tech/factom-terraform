@@ -1,7 +1,42 @@
 ---
-- name: Make docker io present
+- name: Make apt-transport-https present
   apt:
-    name: docker.io
+    name: apt-transport-https
+    state: present
+    update_cache: true
+
+- name: Make ca-certificates present
+  apt:
+    name: ca-certificates
+    state: present
+    update_cache: true
+
+- name: Make curl present
+  apt:
+    name: curl
+    state: present
+    update_cache: true
+
+- name: Make software-properties-common present
+  apt:
+    name: software-properties-common
+    state: present
+    update_cache: true
+
+- name: Add docker apt signing key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add apt repo
+  apt_repository:
+    repo:  "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+    state: present
+
+- name: Install docker ce
+  apt:
+    name: docker-ce
+    state: present
     update_cache: true
 
 - name: Add user to docker group
@@ -22,6 +57,7 @@
     owner: root
     group: root
     mode: 0744
+  when: docker_tls
 
 - name: Add tls cert
   copy:
@@ -30,6 +66,7 @@
     owner: root
     group: root
     mode: 0600
+  when: docker_tls
 
 - name: Add tls key
   copy:
@@ -38,6 +75,7 @@
     owner: root
     group: root
     mode: 0600
+  when: docker_tls
 
 - name: Add docker daemon.json
   copy:
@@ -45,4 +83,5 @@
     dest: /etc/docker/daemon.json
     owner: root
     mode: 0644
+  when: docker_tls
   notify: restart docker

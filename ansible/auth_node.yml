@@ -10,32 +10,10 @@
       become: true
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
       changed_when: false
-    - name: Create docker volumes directory
-      file:
-        path: /var/docker/volumes
-        state: directory
-        owner: root
-        group: root
-        mode: 0700
-    - name: Partition disk
-      parted:
-        device: /dev/sdb
-        number: 1
-        state: present
-    - name: Create a ext4 filesystem on /dev/sdb1 and check disk blocks
-      filesystem:
-        fstype: ext4
-        dev: /dev/sdb1
-    - name: Mount docker disk
-      mount:
-        path: /var/lib/docker/volumes
-        src: /dev/sdb1
-        fstype: ext4
-        state: mounted
     - setup:
 
   roles:
     - { role: disk, tags: [ disk ]}
-    - { role: docker, tags: [ docker ]}
+    - { role: docker, tags: [ docker ], docker_tls: true}
     - { role: factomd, tags: [ factomd ]}
     - { role: exporters, tags: [ exporters ] }

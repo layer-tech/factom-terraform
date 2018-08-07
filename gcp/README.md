@@ -1,7 +1,7 @@
 # Factom Terraform on Google Cloud
 
-This project will create infrastructure needed to create two authority nodes
-and two guard nodes and one monitoring server. If you alter these files after creation, terraform will
+This project will create infrastructure needed to create two authority nodes and one monitoring node. If
+you alter these files after creation, terraform will
 create a plan for application for you to review prior to performing any infrastructure
 updates.
 

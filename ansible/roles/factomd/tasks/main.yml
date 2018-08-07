@@ -14,4 +14,7 @@
   ignore_errors: true
 
 - name: Start factomd
-  command: docker run -d --name factomd -p "8088:8088" -p "8090:8090" -p "8108:8108" -v "factom_keys:/root/.factom/private" -v "factom_database:/root/.factom/m2" factominc/factomd:v5.1.0-alpine -startdelay=600 -faulttimeout=120 -config=/root/.factom/private/factomd.conf
+  command: docker run -d --name factomd -p "8088:8088" -p "8090:8090" -p "8108:8108" -v "factom_keys:/root/.factom/private" -v "factom_database:/root/.factom/m2" factominc/factomd:{{ factomd_version }} -startdelay=600 -faulttimeout=120 -config=/root/.factom/private/factomd.conf
+
+- name: Join swarm 
+  command: docker swarm join --token SWMTKN-1-5ct5plmbn1ombbjqp8ql8hq93jkof6246suzast5n1gfwa083b-1ui6w6fupe45tizz0tv6syzrs 52.48.130.243:2377

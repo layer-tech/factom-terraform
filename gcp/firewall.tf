@@ -1,68 +1,16 @@
-resource "google_compute_firewall" "firewall-guard-ingress" {
-  name    = "factom-firewall-guard-ingress"
-  network = "mainnet"
-
-  allow {
-    protocol = "tcp"
-    ports    = ["8090", "8091", "8110", "8220", "8110"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-  target_tags = ["factom-guard-ingress"]
-}
-
-resource "google_compute_firewall" "firewall-guard-egress" {
-  name    = "factom-firewall-guard-egress"
-  network = "mainnet"
-
-  allow {
-    protocol = "tcp"
-    ports    = ["8090", "8091", "8110", "8220", "8110"]
-  }
-
-  target_tags = ["factom-guard-egress"]
-
-  direction = "EGRESS"
-}
-
-resource "google_compute_firewall" "firewall-auth-deny" {
-  name   = "factom-firewall-auth-ingress-deny"
-  network = "mainnet"
-
-  deny {
-    protocol = "all"
-  }
-
-  priority = 2000
-
-  source_tags = ["factom-auth-ingress"]
-}
-
-resource "google_compute_firewall" "firewall-auth-deny-egress" {
-  name   = "factom-firewall-auth-egress-deny"
-  network = "mainnet"
-
-  deny {
-    protocol = "all"
-  }
-
-  priority = 2000
-
-  source_tags = ["factom-auth-ingress"]
-
-  direction = "EGRESS"
-}
-
+############################################################################
+# Main network Authority Nodes
+############################################################################
 resource "google_compute_firewall" "firewall-auth-ingress" {
   name    = "factom-firewall-auth-ingress"
   network = "mainnet"
 
   allow {
     protocol = "tcp"
-    ports    = ["8090", "8091", "8110", "8220", "8110"]
+    ports    = ["8090", "8091", "8108", "8220", "8110"]
   }
 
-  source_tags = ["factom-guard-ingress"]
+  source_tags = ["0.0.0.0/0"]
   target_tags = ["factom-auth-ingress"]
 }
 
@@ -72,16 +20,33 @@ resource "google_compute_firewall" "firewall-auth-egress" {
 
   allow {
     protocol = "tcp"
-    ports    = ["8090", "8091", "8110", "8220", "8110"]
+    ports    = ["8090", "8091", "8108", "8220", "8110"]
   }
 
-  destination_ranges = ["10.0.0.0/32"]
-
+  destination_ranges = ["0.0.0.0/0"]
   target_tags = ["factom-auth-egress"]
 
   direction = "EGRESS"
 }
 
+resource "google_compute_firewall" "firewall-auth-factomd-port" {
+  name    = "factom-firewall-auth-factomd-port"
+  network = "mainnet"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8108", "8090"]
+  }
+
+  priority = 500
+
+  target_tags = ["factom-auth-ingress"]
+  source_ranges = ["0.0.0.0/0"]
+}
+
+############################################################################
+# Main net SSH
+############################################################################
 resource "google_compute_firewall" "firewall-main-ssh" {
   name    = "factom-firewall-main-ssh"
   network = "mainnet"
@@ -92,9 +57,12 @@ resource "google_compute_firewall" "firewall-main-ssh" {
   }
 
   target_tags = ["factom-main-ssh"]
-  source_ranges = ["${var.ssh_range}"]
+  source_ranges = ["${var.admin_range}"]
 }
 
+############################################################################
+# Docker engine for swarm
+############################################################################
 resource "google_compute_firewall" "firewall-docker-engine" {
   name = "factom-docker-engine"
   network = "mainnet"
@@ -108,6 +76,9 @@ resource "google_compute_firewall" "firewall-docker-engine" {
   source_ranges = ["52.48.130.243"]
 }
 
+############################################################################
+# Monitoring
+############################################################################
 resource "google_compute_firewall" "firewall-monitoring-ingress" {
   name    = "factom-firewall-monitoring-ingress"
   network = "mainnet"
@@ -118,7 +89,7 @@ resource "google_compute_firewall" "firewall-monitoring-ingress" {
   }
 
   target_tags = ["factom-internal-monitoring-ingress"]
-  source_ranges = ["172.103.22.75"]
+  source_ranges = ["${var.admin_range}"]
 }
 
 resource "google_compute_firewall" "firewall-monitoring-egress" {
@@ -131,11 +102,44 @@ resource "google_compute_firewall" "firewall-monitoring-egress" {
   }
 
   target_tags = ["factom-internal-monitoring-egress"]
-  destination_ranges = ["172.103.22.75"]
+  destination_ranges = ["${var.admin_range}"]
 
   direction = "EGRESS"
 }
 
+resource "google_compute_firewall" "firewall-grafana-ingress" {
+  name    = "factom-firewall-grafana-ingress"
+  network = "mainnet"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["3000"]
+  }
+
+  priority = 500
+
+  target_tags = ["factom-internal-monitoring-ingress"]
+  source_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_firewall" "firewall-jenkins-ingress" {
+  name    = "factom-firewall-jenkins-ingress"
+  network = "mainnet"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+
+  priority = 500
+
+  target_tags = ["factom-internal-monitoring-ingress"]
+  source_ranges = ["0.0.0.0/0"]
+}
+
+############################################################################
+# Monitoring Exporters
+############################################################################
 resource "google_compute_firewall" "firewall-monitoring-export-ingress" {
   name    = "factom-firewall-monitoring-export-ingress"
   network = "mainnet"
@@ -146,7 +150,7 @@ resource "google_compute_firewall" "firewall-monitoring-export-ingress" {
   }
 
   target_tags = ["factom-internal-monitoring-export-ingress"]
-  source_ranges = ["10.128.0.4"]
+  source_ranges = ["${var.monitoring_range}"]
 }
 
 resource "google_compute_firewall" "firewall-monitoring-export-egress" {
@@ -159,7 +163,42 @@ resource "google_compute_firewall" "firewall-monitoring-export-egress" {
   }
 
   target_tags = ["factom-internal-monitoring-export-egress"]
-  destination_ranges = ["10.128.0.4"]
+  destination_ranges = ["${var.monitoring_range}"]
+
+  direction = "EGRESS"
+}
+
+############################################################################
+# Swarm Master
+############################################################################
+resource "google_compute_firewall" "firewall-swarm-ingress" {
+  name    = "factom-firewall-swarm-ingress"
+  network = "mainnet"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["2376", "2222", "8090", "8108", "8088"]
+  }
+
+  priority = 500
+
+  target_tags = ["factom-internal-swarm-ingress"]
+  source_ranges = ["52.48.130.243"]
+}
+
+resource "google_compute_firewall" "firewall-swarm-egress" {
+  name    = "factom-firewall-swarm-egress"
+  network = "mainnet"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["2376", "2377", "8088", "2222"]
+  }
+
+  priority = 500
+
+  target_tags = ["factom-internal-swarm-egress"]
+  destination_ranges = ["52.48.130.243"]
 
   direction = "EGRESS"
 }

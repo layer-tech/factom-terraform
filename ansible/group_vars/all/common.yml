@@ -1,3 +1,3 @@
 docker_compose: false
-#vault_version: 0.10.2
-#vault_sha: sha256:f725be68316d10ef2e7779fdedd8eb5d4ed9975303c828466bb9a729e01392dd
+docker_tls: false
+factomd_version: v5.4.1-alpine
